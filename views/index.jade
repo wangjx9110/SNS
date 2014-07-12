@@ -1,0 +1,167 @@
+extends layout
+
+block custom_css
+  
+  link(rel='stylesheet', href='/stylesheets/fontface-alexbrush.css')
+  link(rel='stylesheet', href='/stylesheets/style.css')
+
+block content
+  div.mask
+    div.text 努力载入中..
+    div.typing_loader
+
+  canvas#backgroundCanvas
+  header
+    img#icon(src="/images/logo2(1).png")
+    div#text #{title}
+  div#wrapper
+    ul
+      li
+        div.card.signin-card
+          img.profile-img(src="/images/avatar_2x.png")
+          div#login
+            form(id="loginForm", action="/login", method="post")
+              div.inputArea
+                input.ctl.text-ctl.text-ctl-header(type="email", name="email", placeholder="邮箱 [ Email ]" required)
+                input.ctl.text-ctl.text-ctl-footer(type="password", name="password", placeholder="密码 [ Password ]" required)
+              div.alertContainer
+                div.alert.alert-warning
+              input.ctl.btn-ctl(type="submit", value="登录")
+              input.ctl.btn-ctl.mt15(type="button", value="没有账户? 创建一个!")
+      li
+        div.card.register-card
+          h3 欢迎来到 iTalk! ^-^
+          div#register
+            form(id="registerForm", action="/register", method="post")
+              div.inputArea
+                input.ctl.text-ctl.text-ctl-header(type="email", name="email", placeholder="邮箱 [ Email ]" required)
+                input.ctl.text-ctl.text-ctl-footer(type="text", name="nickname", placeholder="昵称 [ Nickname ]" required)
+                input.ctl.text-ctl.text-ctl-header(type="password" name="password", placeholder="密码 [ Password ]" required)
+                input.ctl.text-ctl.text-ctl-footer(type="password" name="confirmPassword", placeholder="确认密码 [ Confirm Password ]" required)
+              div.alertContainer
+                div.alert.alert-warning
+              input.ctl.btn-ctl(type="submit", value="加入!")
+              input.ctl.btn-ctl.mt15(type="button", value="已有账户? 登录!")
+
+  div.footer Shenyang University of Technology<br>Juexin Wang &copy;
+
+block script
+  script(src="/javascripts/dom/back-animation.js")
+  script(src="/javascripts/sea.js")
+  script.
+    (function(window, undefined) {
+      seajs.config({
+          alias: {
+            'class': '/javascripts/class/'
+          }
+      });
+      seajs.use(['/javascripts/zepto', '/javascripts/dom/iscroll', '/javascripts/util', 'class/Logger', 'class/Register'], function($, IScroll, util, Logger, Register) { 
+        
+        var myScroll = new IScroll('#wrapper', {
+          snap: true,
+          scrollX: true,
+          scrollY: false,
+          eventPassthrough: true
+        });
+        var registerForm = document.querySelector('#registerForm');
+        var loginForm = document.querySelector('#loginForm');
+        var registerBtn = registerForm.querySelector('input[type="submit"]');
+        var loginBtn = loginForm.querySelector('input[type="submit"]');
+        var toLoginBtn = registerForm.querySelector('input[type="button"]');
+        var toRegBtn = loginForm.querySelector('input[type="button"]');
+        var reqisterInputArea = registerForm.querySelector('.inputArea');
+        var loginInputArea = loginForm.querySelector('.inputArea');
+        var registerAlertContainer = util.$('#registerForm .alertContainer');
+        var loginAlertContainer = util.$('#loginForm .alertContainer');
+        var mask = util.$('.mask');
+        var maskText = util.$('.mask .text');
+        
+        reqisterInputArea.addEventListener('click', function(event) {
+          util.closeAlert(registerAlertContainer);
+        });
+        loginInputArea.addEventListener('click', function(event) {
+          util.closeAlert(loginAlertContainer);
+        });
+        //register
+        registerBtn.addEventListener('click', function(event) {
+          //1.修改文案为 注册中... 并添加 disable属性
+          //2.展开遮罩层
+          //3.未出错 -> 关闭遮罩层 -> 跳转登录页 -> 登录页提示注册成功
+          //4.出错 -> 关闭遮罩层 -> 修改文案为 登录 去掉 disable属性 -> 注册页提示出错信息
+          event.preventDefault();
+          var email = registerForm.querySelector('input[name="email"]').value;
+          var nickname = registerForm.querySelector('input[name="nickname"]').value;
+          var password = registerForm.querySelector('input[name="password"]').value;
+          var confirmPassword = registerForm.querySelector('input[name="confirmPassword"]').value;
+          if (password !== confirmPassword) {
+            util.openAlert(registerAlertContainer, '两次输入密码不一致.');
+          } else {
+            //1
+            registerBtn.value = '注册中...';
+            registerBtn.disabled = true;
+            //2
+            util.openMask(mask, maskText, '注册中...');
+            var register = new Register({
+              email: email,
+              nickname: nickname,
+              password: password
+            });
+            register.doRegister(function(data) {
+              util.closeMask(mask);
+              if (data.success) {
+                //3
+                myScroll.goToPage(0, 0, 500);
+                util.openAlert(loginAlertContainer, '注册成功, 可使用新账号登录');
+              } else {
+                //4
+                registerBtn.value = '加入!';
+                registerBtn.disabled = false;
+                util.openAlert(registerAlertContainer, JSON.stringify(data.error));
+              }
+            });
+          }
+        }, false);
+        //login
+        loginBtn.addEventListener('click', function(event) {
+          //1.修改文案为 登录中... 并添加 disable属性
+          //2.展开遮罩层
+          //3.未出错 -> 跳转
+          //4.出错 -> 关闭遮罩层 -> 修改文案为 登录 去掉 disable属性 -> 提示出错信息
+          event.preventDefault();
+          var email = loginForm.querySelector('input[name="email"]').value;
+          var password = loginForm.querySelector('input[name="password"]').value;
+          //1.
+          loginBtn.value = '登录中...';
+          loginBtn.disabled = true;
+          //2.
+          util.openMask(mask, maskText, '登录中...');
+          var logger = new Logger(email, password);
+          logger.login(function(data) {
+            if (data.success) {
+              //3.
+              window.location = '/users?email=' + encodeURIComponent(email);
+            } else {
+              //4.
+              loginBtn.value = '登录';
+              loginBtn.disabled = false;
+              util.closeMask(mask);
+              util.openAlert(loginAlertContainer, JSON.stringify(data.error));
+            }
+          });
+        }, false);
+
+        toLoginBtn.addEventListener('click', function(event) {
+          myScroll.goToPage(0, 0, 500);
+        }, false);
+        toRegBtn.addEventListener('click', function(event) {
+          myScroll.goToPage(1, 0, 500);
+        }, false);
+
+        var mask = document.querySelector('.mask');
+        mask.addEventListener('touchstart', function(event) {
+          event.preventDefault();
+        }, false);
+
+      });
+    })(this);
+

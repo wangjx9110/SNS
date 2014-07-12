@@ -1,0 +1,1243 @@
+extends layout
+
+block custom_css
+  
+  link(rel='stylesheet', href='/stylesheets/fontface-alexbrush.css')
+  link(rel='stylesheet', href='/stylesheets/style-main.css')
+
+block content
+  div.mask
+    div.text 努力载入中..
+    div.typing_loader
+  div.welcome.open
+    img.icon(src="/images/logo2(1).png")
+    div.text iTalk
+    div.typing_loader
+  div.container
+    div.sidebarContainer
+      div.sidebar
+        div.sidebarTitle
+          div.portrait
+            img(src="images/avatar_2x.png", data-token="portrait")
+          div.userinfo
+            div.nickname(data-token="nickname") 未设置昵称
+            div.mood(data-token="mood") 未设置签名
+          div.logout
+            div.logoutButton
+              span.buttonText 退出
+        div.sidebarScroller
+          ul
+            div.pointer
+            li.now#chat
+              div.dot
+              div.icon
+              div.text 最近唠嗑
+            li#friends
+              div.dot
+              div.icon
+              div.text 我的好友
+            li#search
+              div.dot
+              div.icon
+              div.text 新的朋友
+            li#blogs
+              div.dot
+              div.icon
+              div.text 朋友圈
+            li#setting
+              div.dot
+              div.icon
+              div.text 设置
+    div.main
+      div.chatDialog
+        div.chatDialog-header
+          img.chatDialog-portrait(src="images/avatar_2x.png")
+          div.chatDialog-close
+          div.chatDialog-detail
+            div.chatDialog-nickname 昵称样例
+            div.chatDialog-mood 心情样例心情样例心情样例
+        div.chatDialog-content
+          div.chatDialog-contentScroller
+        div.chatDialog-sender
+          form(id="chatForm", action="/users/chat", method="post")
+            input.ctl.text-ctl(type="text", name="message", placeholder="消息 [ Message ]" required)
+            input#sendMessageBtn.ctl.btn-ctl(type="submit", value="发送!")
+      div.header
+        div.toggler#toggler
+          div.dot
+        div.brand
+          div.icon
+          div.text #{title}
+        div.search
+      div.titlesContainer
+        div.slidebox
+        ul.titles
+          li.now 最近唠嗑
+          li 我的好友
+          li 新的朋友
+          li 朋友圈
+          li 设置
+      div.content#content
+        div.pages
+          div.page#chatPage
+            div.pageScroller
+              h2 最近聊天
+              div#chatContainer
+          div.page#friendsPage
+            div.pageScroller
+              h2 我的好友
+              div#friendsContainer
+              //
+                div.friendItem
+                  img.friendItem-portrait(src="images/avatar_2x.png")
+                  div.friendItem-options
+                    button.btn.btn-success 聊天
+                    button.btn.btn-danger 删除
+                  div.friendItem-detail
+                    div.friendItem-nickname TEST
+                    div.friendItem-mood wangauone@gmail.com
+                div.friendItem
+                  img.friendItem-portrait(src="images/avatar_2x.png")
+                  div.friendItem-options
+                    button.btn.btn-success 聊天
+                    button.btn.btn-danger 删除
+                  div.friendItem-detail
+                    div.friendItem-nickname TEST
+                    div.friendItem-mood wangauone@gmail.com
+          div.page#searchPage
+            div.pageScroller
+              div#infoContainer
+              form(id="searchInfoFrom", action="/users/search/info", method="get")
+                input.ctl.text-ctl(type="text", name="info", placeholder="查找用户 [ Email ]", required)
+                input#searchInfoBtn.ctl.btn-ctl(type="submit", value="查找")
+              div#applyContainer
+          div.page#blogsPage
+            div.pageScroller
+              form(id="addBlogForm", action="/users/blogs/addBlog", method="post")
+                input.ctl.text-ctl(name="blog", placeholder="写点什么吧...", required)
+                input#sendBlogBtn.ctl.btn-ctl(type="submit", value="发表!")
+              div#blogContainer
+                div.friendItem
+                  img.friendItem-portrait(src="images/avatar_2x.png")
+                  div.friendItem-options
+                    div.friendItem-favour
+                  div.friendItem-detail
+                    div.friendItem-nickname TEST
+                    div.friendItem-mood 测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章                  
+                    div.friendItem-time 3小时前
+                div.friendItem
+                  img.friendItem-portrait(src="images/avatar_2x.png")
+                  div.friendItem-options
+                    div.friendItem-favour.favour
+                  div.friendItem-detail
+                    div.friendItem-nickname TEST
+                    div.friendItem-mood 测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章测试文章                  
+                    div.friendItem-time 1天前          
+          div.page#settingPage
+            div.pageScroller
+              form(id="settingForm", action="/users/setting", method="post" )
+                div.setting-item.setting-email
+                  div.text 账号
+                  div.value #{email}
+                div.setting-item.setting-portrait
+                  div.text 头像
+                  div.modify#modPortrait
+                  div.value 
+                    img(data-token="portrait", src="images/avatar_2x.png")
+                  input(type="file", name="portrait")
+                div.setting-item.setting-nickname
+                  div.text 昵称
+                  div.modify#modNickname
+                  div.value(data-token="nickname") 
+                  input(type="text", name="nickname" disabled)
+                div.setting-item.setting-mood
+                  div.text 心情
+                  div.modify#modMood
+                  div.value(data-token="mood") ???
+                  input(type="text", name="mood" disabled)
+                div.setting-item.setting-password
+                  div.text 修改密码
+                  div.modify#modPassword
+                  input(type="password", name="password" disabled)
+block script
+  script.
+    //1. 尽快绑定事件, 以阻止滑动
+    (function() {
+      document.querySelector('.welcome').addEventListener('touchstart', function() {
+        event.preventDefault();
+      }, false);
+    })();
+  script(src="/javascripts/sea.js")
+  script(src="/socket.io/socket.io.js")
+  script.
+    var socket = io();
+    var START_TIME = +new Date();
+  script.
+    (function(window, undefined) {
+      seajs.config({
+          alias: {
+            'class': '/javascripts/class/'
+          }
+      });
+      seajs.use(['/javascripts/zepto', '/javascripts/dom/iscroll', '/javascripts/util', 'class/User2', 'class/Blog'],
+        function($,  IScroll, util, User, Blog) {
+          //LOADING
+          // window.addEventListener('load', function() {
+          //   var welcomeDiv = util.$('.welcome');
+          //   var now = +new Date();
+          //   if (now - START_TIME > 3000) {
+          //     util.closeMask(welcomeDiv);  
+          //   } else {
+          //     setTimeout(function() {
+          //       util.closeMask(welcomeDiv);  
+          //     }, 3000 - (now - START_TIME));
+          //   }
+          // });
+          //FUNCTION MVVM
+          function refreshData(token, attr, value) {  //! smart..
+            var elements = util.$$('[data-token="' + token + '"]');
+            for (var i = 0, len = elements.length; i < len; i++) {
+              elements[i][attr] = value;
+            }
+          }
+          function refreshBaseInfo(options) {
+            //nickname && mood && portrait [修改密码, 跳转登录页面. 邮箱不可修改]
+            console.log(options.hasOwnProperty('nickname'));
+            options.hasOwnProperty('nickname') && refreshData('nickname', 'innerHTML', options.nickname);
+            options.hasOwnProperty('mood') && refreshData('mood', 'innerHTML', options.mood);
+            options.hasOwnProperty('portrait') && refreshData('portrait', 'src', options.portrait);
+          }
+          //REFRESH LIST
+          var TPL = {
+            FRIEND_ITEM_TPL:  '<div class="friendItem">\
+                                <img src="${portrait}" class="friendItem-portrait">\
+                                <div class="friendItem-options">\
+                                  <button data-email="${email}" data-type="chat" class="btn btn-success">聊天</button>\
+                                  <button data-email="${email}" data-type="delete" class="btn btn-danger">删除</button>\
+                                </div>\
+                                <div class="friendItem-detail">\
+                                  <div class="friendItem-nickname">${nickname}</div>\
+                                  <div class="friendItem-mood">${mood}</div>\
+                                </div>\
+                              </div>',
+            APPLY_ITEM_TPL: '<div class="friendItem">\
+                                <img src="${portrait}" class="friendItem-portrait">\
+                                <div class="friendItem-options">\
+                                  <button data-email="${email}" data-type="confirm" class="btn btn-success">接受</button>\
+                                  <button data-email="${email}" data-type="ignore" class="btn btn-danger">忽略</button>\
+                                </div>\
+                                <div class="friendItem-detail">\
+                                  <div class="friendItem-nickname">${nickname}</div>\
+                                  <div class="friendItem-mood">${mood}</div>\
+                                </div>\
+                              </div>',
+            SEARCH_ITEM_TPL: '<div class="friendItem">\
+                                <img src="${portrait}" class="friendItem-portrait">\
+                                <div class="friendItem-options">\
+                                  <button data-email="${email}" data-type="apply" class="btn btn-success">申请</button>\
+                                </div>\
+                                <div class="friendItem-detail">\
+                                  <div class="friendItem-nickname">${nickname}</div>\
+                                  <div class="friendItem-mood">${email}</div>\
+                                </div>\
+                              </div>',
+            RECENT_ITEM_TPL: '<div class="friendItem ${hasNew}"  data-email="${email}">\
+                                <div class="dot"></div>\
+                                <img src="${portrait}" class="friendItem-portrait">\
+                                <div class="friendItem-detail">\
+                                  <div class="friendItem-nickname">${nickname}</div>\
+                                  <div class="friendItem-mood">${message}</div>\
+                                </div>\
+                              </div>',
+            CHAT_ITEM_OTHER_TPL:  '<div class="chatDialog-chatItem other">\
+                                    <s></s>\
+                                    <img src="${portrait}" class="chatItem-portrait">\
+                                    <div class="chatItem-content">${message}</div>\
+                                  </div>',
+            CHAT_ITEM_SELF_TPL: '<div class="chatDialog-chatItem self">\
+                                  <s></s>\
+                                  <img src="${portrait}" class="chatItem-portrait">\
+                                  <div class="chatItem-content">${message}</div>\
+                                </div>',
+            BLOG_ITEM_TPL:  '<div class="friendItem">\
+                              <img src="${portrait}" class="friendItem-portrait">\
+                              <div class="friendItem-options">\
+                                <div class="friendItem-favour ${isFavour}" data-email="${email}" data-timeStamp="${timeStamp}"></div>\
+                                <div class="favour-num ${isFavour}">${favNum}</div>\
+                              </div>\
+                              <div class="friendItem-detail">\
+                                <div class="friendItem-nickname">${nickname}</div>\
+                                <div class="friendItem-mood">${message}</div>\
+                                <div class="friendItem-time">${time}</div>\
+                              </div>\
+                            </div>'
+          }
+
+          //GET DATA 程序入口
+          util.ajax({
+            method: 'GET',
+            url: '/users/userInfo',
+            data: {
+              email: '#{email}'
+            },
+            callback: function(info) {
+              console.log(info);
+              //IMP: 在构造时涉及自身属性的地方都要加data-*属性, 方便修改
+              //1.请求用户基本信息, 并填充到DOM中
+              var user = new User(info);
+              //SPECIAL: 条件用到了user
+              var INITINFO = null;
+              
+              function refreshFriendsList(friends) {
+                function refresh(friends) {
+                  //1.DOM更新
+                  //2.维护chatCache数据结构
+                  //1.
+                  var container = util.$('#friendsContainer');
+                  var html = '';
+                  for (var i = 0, len = friends.length; i < len; i++) {
+                    var item = friends[i];
+                    html += util.replaceTpl(TPL.FRIEND_ITEM_TPL, [
+                      { token: /\${portrait}/g, value: item.portrait || 'images/avatar_2x.png' },
+                      { token: /\${email}/g, value: item.email },
+                      { token: /\${nickname}/g, value: item.nickname || item.email },
+                      { token: /\${mood}/g, value: item.mood }
+                    ]);
+                  }
+                  container.innerHTML = html;
+                  //2.维护数据结构, 每次刷新列表时都是最新的朋友列表, 更新user.chatCache
+                  //如果不存在为这个用户建立表单, 如果存在不变动, 如果删除则删除
+                  var newChatCache = {};
+                  for (var i = 0, len = friends.length; i < len; i++) {
+                    var item = friends[i];
+                    newChatCache[item.email] = user.chatCache[item.email] || [];
+                    newChatCache[item.email].hasNew = newChatCache[item.email].hasNew || 0;
+                  }
+                  user.chatCache = newChatCache;
+                  setTimeout(function() {
+                    //pageScroll.friendsPage.refresh();
+                  });
+                }
+                if (!friends) {
+                  util.ajax({
+                    method:'GET',
+                    url: '/users/initInfo',
+                    data: {
+                      email: user.getAttr('email')
+                    },
+                    callback: function(info) {
+                      INITINFO = info;
+                      friends = info.friends;
+                      refresh(friends);
+                    }
+                  });
+                } else {
+                  refresh(friends);
+                }
+              }
+              function refreshApplyList2(apply) {
+                function refresh(apply) {
+                  var container = util.$('#applyContainer');
+                  var html = '';
+                  for (var i = 0, len = apply.length; i < len; i++) {
+                    var item = apply[i];
+                    html += util.replaceTpl(TPL.APPLY_ITEM_TPL, [
+                      { token: /\${portrait}/g, value: item.portrait || 'images/avatar_2x.png' },
+                      { token: /\${email}/g, value: item.email },
+                      { token: /\${nickname}/g, value: item.nickname || item.email },
+                      { token: /\${mood}/g, value: item.email }
+                    ]);
+                  }
+                  container.innerHTML = html;
+                  setTimeout(function() {
+                    //pageScroll.searchPage.refresh();
+                  });             
+                }
+                if (!apply) {
+                  util.ajax({
+                    method:'GET',
+                    url: '/users/initInfo',
+                    data: {
+                      email: user.getAttr('email')
+                    },
+                    callback: function(info) {
+                      INITINFO = info;
+                      console.log(info);
+                      apply = info.apply;
+                      refresh(apply);
+                    }
+                  });
+                } else {
+                  refresh(apply);
+                }
+              }
+              function refreshRecentList() {  //更新最近聊天列表
+                //1. 在收到新消息时要更新(在对应item上加hasNew标志, 这个是onMessage的工作, refresh只负责读user.chatCache)
+                //2. 在发送新消息时要更新(因为发送消息只能在打开聊天框的状态下点击发送按钮发送, 可以在关闭聊天框时执行)
+                console.log('CHAT CACHE', user.chatCache);
+                //根据chatCache构造recentList
+                var chatCache = user.chatCache;
+                var recentList = [];
+                for (var key in chatCache) {
+                  var value = chatCache[key];
+                  if (value.length > 0) {
+                    recentList.push({
+                      email: key,
+                      recentMessage: value[value.length - 1].message,
+                      recentTime: value.recentTime                      
+                    });
+                  }
+                }
+                recentList.sort(function(obj1, obj2) {
+                  if (obj1.recentTime > obj2.recentTime) {
+                    return -1;
+                  } else {
+                    return 1;
+                  }
+                });
+                //排序后进行列表渲染
+                var container = util.$('#chatContainer');
+                var html = '';
+                var friends = INITINFO.friends;
+                for (var i = 0, len = recentList.length; i < len; i++) {
+                  var email = recentList[i].email;
+                  var message = recentList[i].recentMessage;
+
+                  var index = util.findItemHas(friends, { email: email });
+                  var itemInfo = friends[index];
+
+                  html += util.replaceTpl(TPL.RECENT_ITEM_TPL, [
+                    { token: /\${email}/g, value: email },
+                    { token: /\${portrait}/g, value: itemInfo.portrait || 'images/avatar_2x.png' },
+                    { token: /\${nickname}/g, value: itemInfo.nickname || email  },
+                    { token: /\${message}/g, value: message },
+                    { token: /\${hasNew}/g, value: user.chatCache[email].hasNew ? 'hasNew' : ''}
+                  ]);
+                }
+                container.innerHTML = html;
+                setTimeout(function() {
+                  //pageScroll.chatPage.refresh();
+                });
+              }
+              function refreshBlogList() {
+                user.blogs_getBlogsList(function(data) {
+                  var blogsData = data.data;
+                  var html = '';
+                  var container = util.$('#blogContainer');
+                  for (var i = 0, len = blogsData.length; i < len; i++) {
+                    var item = blogsData[i];
+                    //1. 时间转换
+                    var distanceToNow = parseInt((+new Date() - item.time) / (1000 * 3600), 10); //距现在几小时
+                    if (distanceToNow >= 24) {
+                      var timeString = parseInt(distanceToNow / 24, 10) + '天前';
+                    } else {
+                      if (distanceToNow >= 1) {
+                        var timeString = distanceToNow + '小时前';
+                      } else {
+                        var timeString = parseInt((+new Date() - item.time) / (1000 * 60), 10) + '分前';
+                      }
+                    }
+                    //2. 取发帖者信息
+                    if (item.email === user.getAttr('email')) {
+                      var portrait = user.getAttr('portrait');
+                      var nickname = user.getAttr('nickname');
+                    } else {
+                      var friendsInfo = INITINFO.friends;
+                      var portrait = null;
+                      var nickname = null;
+                      for (var j = 0, jLen = friendsInfo.length; j < jLen; j++) {
+                        var jItem = friendsInfo[j];
+                        if (jItem.email === item.email) {
+                          portrait = jItem.portrait;
+                          nickname = jItem.nickname;
+                          break;  
+                        }
+                      }
+                    }
+                    //3. 是否已点赞
+                    console.log('ITEM.FAVOURS', item.favours);
+                    var index = util.findItem(item.favours, user.getAttr('email'));
+                    var isFavour = index > -1 ? true : false;
+                    html += util.replaceTpl(TPL.BLOG_ITEM_TPL, [
+                      { token: /\${portrait}/g, value: portrait || 'images/avatar_2x.png' },
+                      { token: /\${email}/g, value: item.email },
+                      { token: /\${timeStamp}/g, value: item.time },
+                      { token: /\${nickname}/g, value: nickname },
+                      { token: /\${message}/g, value: item.detail },
+                      { token: /\${time}/g, value: timeString },
+                      { token: /\${isFavour}/g, value: isFavour ? 'favour' : '' },
+                      { token: /\${favNum}/g, value: item.favours.length }
+                    ]);
+                  }
+                  container.innerHTML = html;
+                  setTimeout(function() {
+                    //pageScroll.blogsPage.refresh();
+                  }, 0);
+                });
+              }
+              refreshBaseInfo({
+                nickname: user.getAttr('nickname'),
+                mood: user.getAttr('mood'),
+                portrait: user.getAttr('portrait') || 'images/avatar_2x.png'
+              });
+
+              // //8.6初始化各页 Scroll
+              // var pageScroll = {};
+              // var pages = util.$$('.page');
+              // //['#chatPage', '#friendsPage', '#searchPage', '#blogsPage', '#settingPage']
+              // for (var i = 0, len = pages.length; i < len; i++) {
+              //   var item = pages[i];
+              //   console.log(item);
+              //   pageScroll[item.id] = new IScroll(item, {
+              //     eventPassthrough: true
+              //   });
+              // }
+
+              //根据时间添加我的主页 [refreshMyBlogs]
+              //2.构造设置页
+
+              //3.构造用户后请求初始化必须数据
+              util.ajax({
+                method:'GET',
+                url: '/users/initInfo',
+                data: {
+                  email: user.getAttr('email')
+                },
+                callback: function(initInfo) {
+                  INITINFO = initInfo;
+                  //4.刷新最近列表
+                  //5.刷新好友列表
+                  refreshFriendsList(INITINFO.friends);
+                  //6.刷新申请列表
+                  refreshApplyList2(INITINFO.apply);
+                  //7.刷新朋友圈
+                  refreshBlogList();
+                  //8.注册事件
+                  var toggler = util.$('.header .toggler');
+                  var sidebar = util.$('.sidebar');
+                  var main = util.$('.main');
+                  var mask = util.$('.mask');
+                  var maskText = util.$('.mask .text');
+                  //8.1展开/关闭sidebar事件
+                  toggler.addEventListener('touchstart', openSidebar, false);
+                  function openSidebar(event) {
+                    //1.展开sidebar&main
+                    //2.注册关闭事件
+                    event.stopPropagation();  //IMP: 重要, 否则会触发下面绑定的关闭函数
+                    $(sidebar).addClass('open');
+                    $(main).addClass('open');
+                    main.addEventListener('touchstart', closeSidebar, true);
+                  }
+                  function closeSidebar(event) {
+                    //1.关闭sidebar&main
+                    //2.移除关闭事件
+                    event.stopPropagation(); //不向下漏事件
+                    event.preventDefault();
+                    $(sidebar).removeClass('open');
+                    $(main).removeClass('open');
+                    main.removeEventListener('touchstart', closeSidebar, true);
+                  }
+                  //8.x CHAT对话框展开与关闭
+                  function openChatDialog(friendInfo) {
+                    var chatDialog = util.$('.chatDialog');
+                    user.chatCache[friendInfo.email].IS_OPEN = true;
+                    //设置基础信息
+                    util.$('.chatDialog-portrait').src = friendInfo.portrait || 'images/avatar_2x.png';
+                    util.$('.chatDialog-nickname').innerHTML = friendInfo.nickname || friendInfo.email;
+                    util.$('.chatDialog-mood').innerHTML = friendInfo.mood;
+                    util.$('#sendMessageBtn').setAttribute('data-toEmail', friendInfo.email);
+                    //如果上次有对话, 显示最后一次, 如果没有则为空
+                    var content = util.$('.chatDialog-contentScroller');
+                    content.innerHTML = '';
+                    var email = friendInfo.email;
+                    var emailChatCacheLength = user.chatCache[email].length;
+                    console.log(emailChatCacheLength);
+                    if (emailChatCacheLength > 0) {
+                      if (user.chatCache[email].hasNew) {
+                        console.log('?????');
+                        for (var i = (emailChatCacheLength - user.chatCache[email].hasNew); i < emailChatCacheLength; i++) {
+                          //从前向后渲染, 不是从后向前
+                          var emailChatCache = user.chatCache[email][i];
+                          console.log(emailChatCache, i, emailChatCacheLength);
+                          chatDialogAddMessage({
+                                fromSelf: emailChatCache.fromSelf,
+                                portrait: emailChatCache.fromSelf ? user.getAttr('portrait') : friendInfo.portrait,
+                                message: emailChatCache.message
+                          });                          
+                        }
+                      } else {
+                        var lastEmailChatCache = user.chatCache[email][emailChatCacheLength - 1];
+                        chatDialogAddMessage({
+                              fromSelf: lastEmailChatCache.fromSelf,
+                              portrait: lastEmailChatCache.fromSelf ? user.getAttr('portrait') : friendInfo.portrait,
+                              message: lastEmailChatCache.message
+                        });                          
+                      }
+                    }
+                    //hasNew置0
+                    user.chatCache[friendInfo.email].hasNew = 0;
+                    $(chatDialog).addClass('open');
+                    //new throw('当前任务有: 1.收到消息时 消息提醒, 显示消息数量, 当前只显示一条, 如果来的消息为多条, 打开只有一条怎么办{拿一个属性用来检测新消息数量, 之后点击时根据这个值做addMessage} 2. 最近聊天监听点击时间 3. 离线状态');
+                  }
+                  function closeChatDialog() {
+                    var chatDialog = util.$('.chatDialog');
+                    var email = util.$('#sendMessageBtn').getAttribute('data-toEmail');
+                    user.chatCache[email].IS_OPEN = false;
+                    $(chatDialog).removeClass('open');
+                  }
+                  //8.X CHAT关闭事件
+                  util.$('.chatDialog-close').addEventListener('click', function(event) {
+                    refreshRecentList();
+                    closeChatDialog();
+                  }, false);
+                  //8.2CHANNEL点击事件
+                  util.$('.sidebarScroller').addEventListener('click', function(event) {
+                    var target = event.target;
+                    while (target !== this) {
+                      if (target.tagName.toUpperCase() === 'LI') {
+                        showChannel(target.id);
+                        break;
+                      }
+                      target = target.parentNode;
+                    }
+                  }, false);
+
+                  //不一定放在这, showChannel函数
+
+                  // var channelSet = {  
+                  //   //此集合用于存放各频道 HAS NEW 时的逻辑， 一般是刷新列表
+                  //   chat: function(callback) {
+
+                  //     setTimeout(callback, 1000);
+                  //   },
+                  //   friends: function(callback) {
+
+                  //   },
+                  //   search: function(callback) {
+
+                  //   },
+                  //   blogs: function(callback) {
+
+                  //   },
+                  //   setting: function(callback) {
+
+                  //   }
+                  // };
+                  function addHasNew(channelName) {
+                    $('#toggler').addClass('hasNew');
+                    $('#' + channelName).addClass('hasNew');
+                  }
+                  function removeHasNew(channelName) {
+                    $('#' + channelName).removeClass('hasNew');
+                    var list = util.$$('.sidebarScroller li');
+                    for (var i = 0, len = list.length; i < len; i++) {
+                      var item = $(list[i]);
+                      if (item.hasClass('hasNew')) {
+                        return;
+                      }
+                    } //都没有hasNew了
+                    $('#toggler').removeClass('hasNew');
+                  }
+                  function activeBanner(index) {  //上层滑块滚动函数
+                    var ITEM_NUM = 5;
+                    var titles = util.$('.titles');
+                    var slidebox = util.$('.slidebox');
+                    var bannerList = util.$$('.titles li');
+                    var width = $('body').width();
+                    var titlesWidth = $(titles).width();
+                    var slideWidth = $(slidebox).width();
+                    $(titles).css({
+                      '-webkit-transform': 'translateX(' + -((titlesWidth / 5 * index) - ((width - slideWidth) / 4 * index)) + 'px)'
+                    });
+                    $(slidebox).css({
+                      '-webkit-transform': 'translateX(' + ((width - slideWidth) / 4 * index) + 'px)'
+                    });
+                    for (var i = 0, len = bannerList.length; i < len; i++) {
+                      var item = bannerList[i];
+                      if (i === index) {
+                        $(item).addClass('now');
+                      } else {
+                        $(item).removeClass('now');
+                      }
+                    }
+                  }
+                  function activeSidebar(channelName) {
+                    console.log('ACTIVE SIDEBAR');
+                    var list = util.$$('.sidebarScroller li');
+                    var pointer = util.$('.sidebarScroller .pointer');
+                    var height = $(list[0]).height();
+                    var activeItem;
+                    for (var i = 0, len = list.length; i < len; i++) {
+                      var item = list[i];
+                      if (item.id === channelName) {
+                        activeItem = item;
+                        $(item).addClass('now');
+                        $(pointer).css({
+                          '-webkit-transform': 'translateY(' + (height * i) + 'px)'
+                        });
+                        activeBanner(i);
+                      } else {
+                        $(item).removeClass('now');
+                      }
+                    }
+                    removeHasNew(activeItem.id);
+                    //之后执行对应的更新函数
+                    //1.点击的话, 先滚动, 然后执行, 有新的(去掉hasNew)遮罩刷新, 最后执行事件回调(因为没有hasNew无需刷新)
+                    //2.滚动的话, 执行事件回调, 只执行一次, 有新的则遮罩刷新
+                    // var mask = util.$('.mask');
+                    // if ($(activeItem).hasClass('hasNew')) {
+                    //   removeHasNew(activeItem.id);  //因为不需要后端交互, 所以可以先去掉
+                    //   util.openMask(mask);
+                    //   channelSet[activeItem.id](function(data) {
+                    //     util.closeMask(mask);
+                    //   })
+                    // }
+                  }
+                  function showChannel(name) {  //点击事件
+                    console.log('SHOW CHANNEL');
+                    user.setChannel(name);
+                    if (name === 'chat') {    //有人发出信息
+                      myScroll.goToPage(0, 0, 500);
+                    }
+                    if (name === 'friends') { //自己接受了别人的申请, 或自己的申请被别人接受
+                      myScroll.goToPage(1, 0, 500);
+                    }
+                    if (name === 'search') {  //有新用户申请
+                      myScroll.goToPage(2, 0, 500);
+                    }
+                    if (name === 'blogs') {   //有他人新博客 [别人删了不提示] 或自己的博客有变动 [自己的增&删] 
+                      myScroll.goToPage(3, 0, 500);
+                    }
+                    if (name === 'setting') { //设置页面没有更新
+                      myScroll.goToPage(4, 0, 500);
+                    }
+                    //此处触发是为了, 提前改变样式
+                    activeSidebar(name);
+                  }
+                  //8.3 FRIENDS LIST 点击
+                  util.$('#friendsContainer').addEventListener('click', function(event) {
+                    var target = event.target;
+                    while(target !== this) {
+                      if (target.tagName.toUpperCase() === 'BUTTON') {
+                        var email = target.getAttribute('data-email');
+                        var type = target.getAttribute('data-type');
+                        if (type === 'chat') {
+                          var friends = INITINFO.friends;
+                          for (var i = 0, len = friends.length; i < len; i++) {
+                            var item = friends[i];
+                            if (item.email === email) {
+                              openChatDialog(item);
+                              break;
+                            }
+                          }
+                        }
+                        if (type === 'delete') {
+                          var mask = util.$('.mask');
+                          util.openMask(mask, util.$('.mask .text'), '好友删除中...');
+                          user.friends_removeFriend(email, function() {
+                            util.ajax({
+                              method:'GET',
+                              url: '/users/initInfo',
+                              data: {
+                                email: user.getAttr('email')
+                              },
+                              callback: function(info) {
+                                INITINFO = info;
+                                refreshFriendsList(info.friends);
+                                refreshBlogList();
+                                util.closeMask(mask);
+                              }
+                            });
+                          });
+                        }
+                      }
+                      target = target.parentNode;
+                    }
+                  }, false);
+                  //8.4 APPLY LIST 点击
+                  util.$('#applyContainer').addEventListener('click', function(event) {
+                    var target = event.target;
+                    while(target !== this) {
+                      if (target.tagName.toUpperCase() === 'BUTTON') {
+                        var email = target.getAttribute('data-email');
+                        var type = target.getAttribute('data-type');
+                        if (type === 'confirm') {
+                          alert('CONFIRM ' + email);
+                          util.openMask(mask, maskText, '正在确认中...');
+                          user.friends_confirmFriend(email, function() {
+                            alert('好友已添加!');
+                            refreshBlogList();
+                            refreshFriendsList();
+                          });
+                        }
+                        if (type === 'ignore') {
+                          user.friends_ignoreFriend(email, function() {
+                            alert('申请已忽略');
+                          });
+                        }
+                        util.ajax({
+                          method:'GET',
+                          url: '/users/initInfo',
+                          data: {
+                            email: user.getAttr('email')
+                          },
+                          callback: function(info) {
+                            INITINFO = info;
+                            refreshFriendsList(info.friends);  //刷新同意者的好友列表
+                            refreshApplyList2(info.apply); //刷新同意者的被申请列表
+                            util.closeMask(mask);
+                          }
+                        });
+                      }
+                      target = target.parentNode;
+                    }
+                  });
+                  //8.x SEARCH BTN 点击
+                  util.$('#searchInfoBtn').addEventListener('click', function(event) {
+                    event.preventDefault();
+                    var container = util.$('#infoContainer');
+                    var searchEmail = util.$('#searchInfoFrom input[name="info"]').value;
+                    user.search_findFriend(searchEmail, function(data) {
+                      var info = data.info;
+                      console.log(info);
+                      var html = '';
+                      for (var i = 0, len = info.length; i < len; i++) {
+                        var item = info[0];
+                        html += util.replaceTpl(TPL.SEARCH_ITEM_TPL, [
+                          { token: /\${email}/g, value: item.email },
+                          { token: /\${portrait}/g, value: item.portrait || 'images/avatar_2x.png'},
+                          { token: /\${nickname}/g, value: item.nickname || '此用户未设置昵称' }
+                        ]);
+                      }
+                      container.innerHTML = html || '<div class="alert alert-warning">"未找到用户"</div>';
+                      //pageScroll.searchPage.refresh();
+                    });                
+                  });
+                  //8.x SEARCH LIST 点击
+                  util.$('#infoContainer').addEventListener('click', function(event) {
+                    var target = event.target;
+                    while(target !== this) {
+                      if (target.tagName.toUpperCase() === 'BUTTON') {
+                        var email = target.getAttribute('data-email');
+                        var type = target.getAttribute('data-type');
+                        console.log(target);
+                        if (type === 'apply') {
+                          util.openMask(mask, maskText, '正在申请中...');
+                          (function(_target) {
+                            user.search_requestFriend(email, function(data) {
+                              if (data.success) {
+                                console.log(_target);
+                                _target.innerHTML = '已申请';
+                                _target.disabled = true;
+                              } else {
+                                alert(data.error);
+                              }
+                              util.closeMask(mask);
+                            });
+                          })(target);
+                        }
+
+                      }
+                      target = target.parentNode;
+                    }                    
+                  });
+                  //8.x RENCNT LIST 点击
+                  util.$('#chatContainer').addEventListener('click', function(event) {
+                    var target = event.target;
+                    while(target !== this) {
+                      if ($(target).hasClass('friendItem')) {
+                        var email = target.getAttribute('data-email');
+                        var friends = INITINFO.friends;
+                        for (var i = 0, len = friends.length; i < len; i++) {
+                          var item = friends[i];
+                          if (item.email === email) {
+                            openChatDialog(item);
+                            break;
+                          }
+                        }
+                        return;
+                      }
+                      target = target.parentNode;
+                    }
+                  });
+                  //8.x CHAT DIALOG BTN 点击 [发送消息]
+                  function chatDialogAddMessage(msgObj) {
+                    var wrapper = util.$('.chatDialog-content');
+                    var container = util.$('.chatDialog-contentScroller');
+                    if (msgObj.fromSelf) {
+                      container.innerHTML += util.replaceTpl(TPL.CHAT_ITEM_SELF_TPL, [
+                        { token: /\${portrait}/g, value: msgObj.portrait || 'images/avatar_2x.png' },
+                        { token: /\${message}/g, value: msgObj.message }
+                      ]);
+                    } else {
+                      container.innerHTML += util.replaceTpl(TPL.CHAT_ITEM_OTHER_TPL, [
+                        { token: /\${portrait}/g, value: msgObj.portrait || 'images/avatar_2x.png' },
+                        { token: /\${message}/g, value: msgObj.message }
+                      ]);
+                    }
+                    //CHAT SCROLL
+                    setTimeout(function() {
+                      chatScroll.refresh();
+                      var distance = $(wrapper).height() - $(container).height();
+                      console.log($(container).height(), $(wrapper).height(), distance);
+                      if (distance > 0) { //wrapper大于container
+
+                      } else {  //container超出, 进行新消息滚动
+                        chatScroll.scrollTo(0, distance, 300);
+                      }
+                    }, 0);
+                  }
+                  util.$('#sendMessageBtn').addEventListener('click', function(event) {
+                    var toEmail = this.getAttribute('data-toEmail');
+                    var messageCtl = util.$('#chatForm [name="message"]');
+                    var message = messageCtl.value;
+                    if (message === '') {
+                      alert('信息内容不能为空');
+                      event.preventDefault();
+                    } else {
+                      var self = this;
+                      self.value = '发送中...';
+                      self.disabled = true;
+                      user.chat_sendMessage(toEmail, message, function() {
+
+                        self.value = '发送!';
+                        self.disabled = false;
+                        messageCtl.value = '';
+                        chatDialogAddMessage({
+                          fromSelf: true,
+                          portrait: user.getAttr('portrait'),
+                          message: message
+                        });
+                        console.log('SEND', user.chatCache);
+                      });
+                    }
+                  });
+                  //8.x BLOG BTN 点击 [发送微博]
+                  util.$('#sendBlogBtn').addEventListener('click', function(event) {
+                    var blogCtl = util.$('#addBlogForm [name="blog"]');
+                    event.preventDefault();
+                    var blog = new Blog({
+                      email: user.getAttr('email'),
+                      detail: blogCtl.value
+                    });
+                    user.blogs_addBlog(blog, function(data) {
+                      if (data.success) {
+                        alert('添加微博成功!');
+                        refreshBlogList();
+                      } else {
+                        alert(JSON.stringify(data.error));
+                        throw data.error;
+                      }
+                    });
+                  });
+                  //8.x BLOG LIST 点击
+                  util.$('#blogContainer').addEventListener('click', blogFavourClick, false);
+                  function blogFavourClick(event) {
+                    util.$('#blogContainer').removeEventListener('click', blogFavourClick, false);  //移除
+                    var target = event.target;
+                    while(target !== this) {
+                      if ($(target).hasClass('friendItem-favour')) {
+                        var email = target.getAttribute('data-email');
+                        var timeStamp = target.getAttribute('data-timeStamp');
+                        var favNum = target.parentNode.querySelector('.favour-num ');
+                        if ($(target).hasClass('favour')) { //已赞, 点击取消
+                          console.log('CANCEL FAVOUR');
+                          util.openMask(mask, maskText, '-1 中...');
+                          user.blogs_removeFavour(email, timeStamp, function() {
+                            util.closeMask(mask);
+                            $(target).removeClass('favour');
+                            favNum.innerHTML = parseInt(favNum.innerHTML) - 1;
+                            $(favNum).removeClass('favour');
+                            util.$('#blogContainer').addEventListener('click', blogFavourClick, false); //添加                            
+                          });
+                        } else {  //未赞, 点击赞
+                          console.log('ADD FAVOUR');
+                          util.openMask(mask, maskText, '+1 中...');
+                          user.blogs_addFavour(email, timeStamp, function() {
+                            util.closeMask(mask);
+                            $(target).addClass('favour');
+                            favNum.innerHTML = parseInt(favNum.innerHTML) + 1;
+                            $(favNum).addClass('favour');
+                            util.$('#blogContainer').addEventListener('click', blogFavourClick, false); //添加
+                          });
+                        }
+                        return;
+                      }
+                      target = target.parentNode;
+                    }
+                  }
+                  //8.x 设置页按钮点击 [更新头像, 更新昵称, 更新密码]
+                  //(1)头像上传
+                  var portraitCtl = util.$('#settingForm input[name="portrait"]');
+                  portraitCtl.addEventListener('change', function() {
+                    util.openMask(mask, maskText, '更新头像中...');
+                    user.setPortrait(this.files[0], function(data) {
+                      refreshBaseInfo({ portrait: user.getAttr('portrait') })
+                      util.closeMask(mask);
+                    })
+                  })
+                  util.$('#modPortrait').addEventListener('click', function() {
+                    portraitCtl.click();
+                  }, false);
+                  //(2)更新昵称
+                  util.$('#modNickname').addEventListener('click', function() {
+                    //显示输入框, 赋值, 消失焦点, 更新成功时display:none
+                    var ctl = util.$('#settingForm input[name="nickname"]');
+                    var html = util.$('#settingForm div[data-token="nickname"]').innerHTML;
+                    ctl.value = html;
+                    util.show(ctl);
+                    ctl.disabled = false;
+                    ctl.focus();
+                    ctl.addEventListener('blur', ctlBlur, false);
+                    function ctlBlur(event) {
+                      ctl.removeEventListener('blur', ctlBlur, false);
+                      util.openMask(mask, maskText, '昵称修改中...');
+                      user.setNickname(this.value, function() {
+                        util.closeMask(mask);
+                        util.hide(ctl);
+                        ctl.disabled = true;
+                        refreshBaseInfo({ nickname: user.getAttr('nickname') });
+                      });
+                    }
+                  }, false);
+                  //(3)更新心情
+                  util.$('#modMood').addEventListener('click', function() {
+                    var ctl = util.$('#settingForm input[name="mood"]');
+                    var html = util.$('#settingForm div[data-token="mood"]').innerHTML;
+                    ctl.value = html;
+                    util.show(ctl);
+                    ctl.disabled = false;
+                    ctl.focus();
+                    ctl.addEventListener('blur', ctlBlur, false);
+                    function ctlBlur(event) {
+                      ctl.removeEventListener('blur', ctlBlur, false);
+                      util.openMask(mask, maskText, '心情修改中...');
+                      user.setMood(this.value, function() {
+                        util.closeMask(mask);
+                        util.hide(ctl);
+                        ctl.disabled = true;
+                        refreshBaseInfo({ mood: user.getAttr('mood') });
+                      });
+                    }
+                  }, false);
+                  //(4)更新密码
+                  util.$('#modPassword').addEventListener('click', function() {
+                    var ctl = util.$('#settingForm input[name="password"]');
+                    ctl.value = '';
+                    util.show(ctl);
+                    ctl.disabled = false;
+                    ctl.focus();
+                    ctl.addEventListener('blur', ctlBlur, false);
+                    function ctlBlur(event) {
+                      ctl.removeEventListener('blur', ctlBlur, false);
+                      util.openMask(mask, maskText, '密码修改中...');
+                      user.setPassword(this.value, function() {
+                        util.closeMask(mask);
+                        util.hide(ctl);
+                        ctl.disabled = true;
+                        alert('密码已更新.请重新登录.');
+                        window.location = '/';
+                      });                    
+                    }
+                  }, false);
+                  //8.5 初始化 Scroll
+                  var myScroll = new IScroll('#content', {
+                    snap: true,
+                    scrollX: true,
+                    scrollY: false,
+                    eventPassthrough: true,
+                    bounceEasing: 'quadratic',
+                    deceleration: 0.01,
+                    momentum: false
+                  });
+                  myScroll.on('scrollEnd', function() {
+                    var list = ['chat', 'friends', 'search', 'blogs', 'setting'];
+                    var index = this.currentPage.pageX;
+                    activeSidebar(list[index]);
+                  });
+                  //8.7初始化CHAT DIALOG Scroll
+                  var chatDialogContent = util.$('.chatDialog-content');
+                  var chatScroll = new IScroll(chatDialogContent);
+                  //9 监听事件
+                  socket.on('new_apply', function(data) {
+                    if (user.getAttr('channel') !== 'search') {
+                      addHasNew('search');
+                    }
+                    user.friends_onRequest(data.applyEmail, function() {
+                      refreshApplyList2();
+                    });
+                  });
+                  socket.on('remove_apply', function(data) {
+                    //一般不存在取消申请的情况
+                  });
+                  socket.on('new_friend', function(data) {
+                    if (user.getAttr('channel') !== 'friends') {
+                      addHasNew('friends');
+                    }
+                    user.friends_onConfirm(data.confirmEmail, function() {
+
+                      refreshFriendsList();
+                      refreshApplyList2();
+                      refreshBlogList();
+                    });
+                  });
+                  socket.on('remove_friend', function(data) {
+                    user.friends_onRemove(data.removeEmail, function() {
+                      console.log('REMOVE FRIEND');
+                      refreshFriendsList();
+                      refreshBlogList();
+                    });
+                  })
+                  socket.on('new_message', function(data) {
+                    if (user.getAttr('channel') !== 'chat') {
+                      addHasNew('chat');
+                    }
+                    user.chat_onMessage(data.fromEmail, data.message, function() {
+                      console.log('RECEIVE', user.chatCache);
+                      if (user.chatCache[data.fromEmail].IS_OPEN) {
+                        for (var i = 0, len = INITINFO.friends.length; i < len; i++) {
+                          var item = INITINFO.friends[i];
+                          if (item.email === data.fromEmail) {
+                            chatDialogAddMessage({
+                              fromSelf: false,
+                              portrait: item.portrait,
+                              message: data.message
+                            });
+                            break;
+                          }
+                        } 
+                      } else {
+                        user.chatCache[data.fromEmail].hasNew++;
+                        alert('有其他好友的新消息到达!');
+                      }
+                      refreshRecentList();
+                    });
+                  });
+                  socket.on('new_blog', function(data) {
+                    //alert('NEW BLOG');
+                    if (user.getAttr('channel') !== 'blogs') {
+                      addHasNew('blogs');
+                    }
+                    refreshBlogList();
+                  });
+                  socket.on('remove_blog', function(data) {
+                    alert('REMOVE BLOG');
+                    refreshBlogList();
+                  });
+                  // socket.on('new_comment', function(data) {
+
+                  // });
+                  // socket.on('remove_comment', function(data) {
+
+                  // });
+                  socket.on('new_favour', function(data) {
+                    //alert('NEW FAVOUR');
+                    refreshBlogList();
+                  });
+                  socket.on('remove_favour', function(data) {
+                    //alert('REMOVE FAVOUR');
+                    refreshBlogList();
+                  });
+                  setTimeout(function() {
+                    socket.emit('online');
+                  }, 100);
+                  (function() {
+                    var welcomeDiv = util.$('.welcome');
+                    var now = +new Date();
+                    if (now - START_TIME > 3000) {
+                      util.closeMask(welcomeDiv);  
+                    } else {
+                      setTimeout(function() {
+                        util.closeMask(welcomeDiv);  
+                      }, 3000 - (now - START_TIME));
+                    }
+                  })();
+                }                
+              })
+
+              user.onChannelChange = function(channelName) {
+                console.log('CHANGE CHANNEL');
+              };
+
+              //event function
+              // var lis = util.$$('.sidebarScroller li');
+              // for (var i = 0, len = lis.length; i < len; i++) {
+              //   lis[i].addEventListener('click', function(event) {
+              //     user.setChannel(this.id);
+              //   });
+              // }
+            }
+          });
+          //CHANGE CHANNEL
+          // function channelBlogs(user) {
+          //   console.log('this is channel blogs');
+          //   //content.innerHTML = 'BLOGS PAGE...';
+          //   var addBlogForm = util.$('#addBlogForm');
+          //   var addBlogBtn = util.$('[type="submit"]', addBlogForm);
+
+          //   var blogCtl = util.$('[name="blog"]', addBlogForm);
+          //   var blogContainer = util.$('#blogContainer');
+
+          //   refreshBlogList(blogContainer);
+
+          //   addBlogBtn.addEventListener('click', function(event) {
+          //     event.preventDefault();
+          //     var blog = new Blog({
+          //       email: user.getAttr('email'),
+          //       detail: blogCtl.value
+          //     });
+          //     user.blogs_addBlog(blog, function(data) {
+          //       if (data.success) {
+          //         alert('添加微博成功!');
+          //         refreshBlogList(blogContainer);
+          //       } else {
+          //         alert(JSON.stringify(data.error));
+          //         throw data.error;
+          //       }
+          //     });
+          //   });
+
+          //   function refreshBlogList(container) {
+          //     // container.innerHTML = '';
+          //     var blogsList = user.blogs_getBlogsList();
+          //     console.log(blogsList, blogsList.length);
+          //     // for (var i = 0, len = blogsList.length; i < len; i++) {
+          //     //   var item = blogsList[i];
+          //     //   console.log(i, item);
+          //     //   var blogDiv = document.createElement('div');
+
+          //     //   var emailDiv = document.createElement('div');
+          //     //   emailDiv.innerHTML = 'EMAIL: ' + item.getEmail();
+                
+          //     //   var detailDiv = document.createElement('div');
+          //     //   detailDiv.innerHTML = 'DETAIL: ' + item.getDetail();
+                
+          //     //   var timeDiv = document.createElement('div');
+          //     //   var time = util.convertTime(item.getTime());
+          //     //   timeDiv.innerHTML = 'TIME: ' + time.year + '/' + time.month + '/' + time.day + ' ' + time.hours + ':' + time.minutes + ':' + time.seconds;
+                
+          //     //   var commentsDiv = document.createElement('div');
+          //     //   var comments = item.getComments();
+          //     //   var result = '';
+          //     //   console.log('comments:', comments);
+          //     //   for (var j = 0, jLen = comments.length; j < jLen; j++) {
+          //     //     var item = comments[j];
+          //     //     result += ('FROM: ' + item.getFrom() + ' TO: ' + item.getTo() + ' DETAIL: ' + item.getDetail() + '<br>'); 
+          //     //   }
+          //     //   comments.innerHTML = result;
+
+          //     //   var favourNumDiv = document.createElement('div');
+          //     //   favourNumDiv.innerHTML = 'FAV NUM: ' + item.getFavours().length;
+
+          //     //   blogDiv.appendChild(emailDiv);
+          //     //   blogDiv.appendChild(detailDiv);
+          //     //   blogDiv.appendChild(timeDiv);
+          //     //   blogDiv.appendChild(commentsDiv);
+          //     //   blogDiv.appendChild(favourNumDiv);
+          //     //   container.appendChild(blogDiv);
+          //     // }
+          //   }
+          // }
+      });
+    })(this);
+          

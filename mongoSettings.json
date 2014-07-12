@@ -1,0 +1,5 @@
+{
+  "hostname": "localhost",
+  "databasename": "SNS",
+  "databaseport": "27017"
+}
